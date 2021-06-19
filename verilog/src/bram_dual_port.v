@@ -1,4 +1,6 @@
 `timescale 1ns/10ps // For simulation purpose
+`define SIMULATION 1
+
 /*
  * True dual port, dual clock, vendor independant block RAM.
  * Note: This code is meant for FPGA but can be ported to ASIC.
@@ -59,10 +61,12 @@ begin
 end
 
 // For simulation only
+`ifdef SIMULATION
 always @ (posedge b_clk)
     // If at least one of them is writing while the other
     // is reading/writing the same address we have a problem
 	if (a_addr == b_addr && (b_wr || a_wr))
 		$display("BRAM_DUAL_PORT: Error simultanous memory access");
+`endif
 
 endmodule
