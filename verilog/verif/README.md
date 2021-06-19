@@ -4,7 +4,23 @@ In this directory you will find verification related content
 
 Every directory is named after the verilog file it depends on, each one have they dedicated Makefile.
 
-## Dependencies
+## Dependencies - Docker
+
+You can setup a docker with (You need Docker installed):
+```
+cd docker/
+sudo docker build -t verificator . # This may take a whike
+cd ..
+# If your docker daemon is not running: $ sudo dockerd
+# You should now be able to list all docker images with: sudo docker image ls
+
+# Everytime you want to run simulations you can use (in the verif/ directory):
+sudo docker run -v `pwd`:`pwd` -w `pwd` -it verificator
+# You can run test by simply: cd <module to test>/ && make
+# Type Ctrl-D or exit when done
+```
+
+## Dependencies - Local setup
 
 ### Debian/Ubuntu
 Under linux / Debian based distribution (Like Ubuntu) you can:
