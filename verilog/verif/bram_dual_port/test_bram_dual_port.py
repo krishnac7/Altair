@@ -5,7 +5,7 @@ from cocotb.triggers import RisingEdge
 from cocotb.triggers import FallingEdge
 
 @cocotb.test()
-async def test_ram(dut):
+async def test_bram_dual_port(dut):
     clock_a = Clock(dut.a_clk, 10, units="us") # 10us period clock
     clock_b = Clock(dut.b_clk, 9, units="us") # 10us period clock
     cocotb.fork(clock_a.start())
