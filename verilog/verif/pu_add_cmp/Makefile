@@ -1,5 +1,5 @@
 export COCOTB_REDUCED_LOG_FMT=1
-SIM = verilator
+SIM = icarus
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(shell pwd)/../../src/pu_add_cmp.v
 TOPLEVEL = pu_add_cmp

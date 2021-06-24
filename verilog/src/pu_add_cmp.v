@@ -74,14 +74,14 @@ module pu_add_cmp (
   wire sum_carry_sign;
   wire sum_overflow_signed;
   wire is_active;
-  wire opcode_matches; // The opcode matches what we can do
+  wire opcode_matches_sum; // The opcode matches what we can do
+  wire opcode_matches_cmp;
 
   assign o_unique_ack = is_active;
-  assign is_active = !i_unique_ack && opcode_matches;
-
-  assign opcode_matches = (i_opcode == `OPCODE_SUB) |
-         (i_opcode == `OPCODE_ADD) |
-         (i_opcode == `OPCODE_ICMP);
+  assign is_active = !i_unique_ack & ( opcode_matches_sum | opcode_matches_cmp);
+  assign opcode_matches_sum = (i_opcode == `OPCODE_SUB) |
+         (i_opcode == `OPCODE_ADD);
+  assign opcode_matches_cmp = (i_opcode == `OPCODE_ICMP);
 
   assign o_sela = i_rega;
   assign o_selb = i_regb;
@@ -91,8 +91,8 @@ module pu_add_cmp (
 
   assign {carry_sum, result_sum} = i_ina + muxb;
   assign o_write_data = result_sum;
-  assign o_write_en = is_active;
-  assign o_write_flag = is_active;
+  assign o_write_en = !i_unique_ack & opcode_matches_sum;
+  assign o_write_flag = !i_unique_ack & opcode_matches_cmp;
   assign sum_carry_sign = result_sum[OPTION_REG_WIDTH-1];
   assign sum_overflow_signed = (i_ina[OPTION_REG_WIDTH-1] == muxb[OPTION_REG_WIDTH-1]) &
          (i_ina[OPTION_REG_WIDTH-1] ^ result_sum[OPTION_REG_WIDTH-1]);
