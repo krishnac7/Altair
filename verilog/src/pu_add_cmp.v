@@ -48,18 +48,18 @@ module pu_add_cmp (
     // To the registers
     output wire [4:0] o_sela, // select which register we want on ina
     output wire [4:0] o_selb, // select which register we want on inb
-    output wire [4:0] write_reg, // select with register to write
-    output wire [OPTION_REG_WIDTH-1:0] write_data,
-    output wire write_en, // will latch the register on the rising edge
+    output wire [4:0] o_write_reg, // select with register to write
+    output wire [OPTION_REG_WIDTH-1:0] o_write_data,
+    output wire o_write_en, // will latch the register on the rising edge
     // From the registers
-    input [OPTION_REG_WIDTH-1:0] ina,
-    input [OPTION_REG_WIDTH-1:0] inb,
+    input [OPTION_REG_WIDTH-1:0] i_ina,
+    input [OPTION_REG_WIDTH-1:0] i_inb,
 
     // To the Flags
-    output wire flag_cmp,
-    output wire write_flag,
+    output wire o_flag_cmp,
+    output wire o_write_flag,
     // From the Flags
-    input wire [3:0] cmp_op
+    input wire [3:0] i_cmp_op
   );
   parameter OPTION_REG_WIDTH = 64;
   parameter OPTION_OPCODE_WIDTH = 6;
@@ -85,47 +85,31 @@ module pu_add_cmp (
 
   assign o_sela = i_rega;
   assign o_selb = i_regb;
-  assign write_reg = i_regd;
+  assign o_write_reg = i_regd;
 
-  assign muxb = (i_opcode == `OPCODE_SUB) ? (~inb)+1 : inb;
+  assign muxb = (i_opcode == `OPCODE_SUB) ? (~i_inb)+1 : i_inb;
 
-  assign {carry_sum, result_sum} = ina + muxb;
-  assign write_data = result_sum;
-  assign write_en = is_active;
-  assign write_flag = is_active;
+  assign {carry_sum, result_sum} = i_ina + muxb;
+  assign o_write_data = result_sum;
+  assign o_write_en = is_active;
+  assign o_write_flag = is_active;
   assign sum_carry_sign = result_sum[OPTION_REG_WIDTH-1];
-  assign sum_overflow_signed = (ina[OPTION_REG_WIDTH-1] == muxb[OPTION_REG_WIDTH-1]) &
-         (ina[OPTION_REG_WIDTH-1] ^ result_sum[OPTION_REG_WIDTH-1]);
+  assign sum_overflow_signed = (i_ina[OPTION_REG_WIDTH-1] == muxb[OPTION_REG_WIDTH-1]) &
+         (i_ina[OPTION_REG_WIDTH-1] ^ result_sum[OPTION_REG_WIDTH-1]);
 
-  assign cmp_eq = (ina == inb);
+  assign cmp_eq = (i_ina == i_inb);
   assign cmp_lts = !(sum_carry_sign == sum_overflow_signed);
   assign cmp_ltu = !carry_sum;
-  always @*
-  begin
-    case (cmp_op)
-      `FLAG_INDEX_EQ:
-        flag_cmp = cmp_eq;
-      `FLAG_INDEX_NEQ:
-        flag_cmp = !cmp_eq;
-      `FLAG_INDEX_GTU:
-        flag_cmp = !(cmp_eq | cmp_ltu);
-      `FLAG_INDEX_GTS:
-        flag_cmp = !(cmp_eq | cmp_lts);
-      `FLAG_INDEX_GEU:
-        flag_cmp = !cmp_ltu;
-      `FLAG_INDEX_GES:
-        flag_cmp = !cmp_lts;
-      `FLAG_INDEX_LTU:
-        flag_cmp = cmp_ltu;
-      `FLAG_INDEX_LTS:
-        flag_cmp = cmp_lts;
-      `FLAG_INDEX_LEU:
-        flag_cmp = cmp_ltu | cmp_eq;
-      `FLAG_INDEX_LES:
-        flag_cmp = cmp_lts | cmp_eq;
-      default:
-        flag_cmp = 1'b0;
-    endcase
-  end
+
+  assign o_flag_cmp = (i_cmp_op==`FLAG_INDEX_EQ) ? cmp_eq :
+         (i_cmp_op==`FLAG_INDEX_NEQ) ? !cmp_eq :
+         (i_cmp_op==`FLAG_INDEX_GTU) ? !(cmp_eq | cmp_ltu) :
+         (i_cmp_op==`FLAG_INDEX_GEU) ? !cmp_ltu :
+         (i_cmp_op==`FLAG_INDEX_GES) ? !cmp_lts :
+         (i_cmp_op==`FLAG_INDEX_LTU) ? cmp_ltu :
+         (i_cmp_op==`FLAG_INDEX_LTS) ? cmp_lts :
+         (i_cmp_op==`FLAG_INDEX_LEU) ? cmp_ltu | cmp_eq :
+         (i_cmp_op==`FLAG_INDEX_LES) ? cmp_lts | cmp_eq :
+         1'b0;
 
 endmodule // pu_add_cmp
