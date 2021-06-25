@@ -73,4 +73,5 @@ async def test_pu_add_cmp_initial_value(dut):
     await RisingEdge(dut.i_clk) # [1]
     assert dut.o_write_en.value.binstr == "0", "No input: We should not write any register"
     assert dut.o_write_flag.value.binstr == "0", "No input: Should not write flag"
-    
+    assert dut.o_unique_ack.value.binstr == "0", "No input: Should not be active"
+
