@@ -1,3 +1,5 @@
+// This basic ALU implementation (ADD,CMP) is meant to be used for out of order
+// execution
 `define OPCODE_SUB 6'b000001
 `define OPCODE_ADD 6'b000010
 `define OPCODE_ICMP 6'b000011 // Integer compare
@@ -94,7 +96,7 @@ module pu_add_cmp (
   assign o_write_en = !i_unique_ack & opcode_matches_sum;
   assign o_write_flag = !i_unique_ack & opcode_matches_cmp;
   assign sum_carry_sign = result_sum[OPTION_REG_WIDTH-1];
-  assign sum_overflow_signed = (i_ina[OPTION_REG_WIDTH-1] == muxb[OPTION_REG_WIDTH-1]) &
+  assign sum_overflow_signed = (i_ina[OPTION_REG_WIDTH-1] == muxb[OPTION_REG_WIDTH0]) &
          (i_ina[OPTION_REG_WIDTH-1] ^ result_sum[OPTION_REG_WIDTH-1]);
 
   assign cmp_eq = (i_ina == i_inb);
