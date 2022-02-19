@@ -5,14 +5,11 @@ Detects if the instruction should be considered as a branch, an arithmetic
 instruction, a vector instruction...
 
 Inputs:
-|---------------------|----------------------------------------------------|
 | Name                | Description                                        |
 |---------------------|----------------------------------------------------|
 | Instruction (instr) | The instruciton to decode (cf ISA for more detail) |
-|---------------------|----------------------------------------------------|
 
 Outputs:
-|------------|---------------------------------------------------------------------|
 | Name       | Description                                                         |
 |------------|---------------------------------------------------------------------|
 | is_alu     | The instruction needs to be decoded by the ALU  decoder             |
@@ -24,7 +21,6 @@ Outputs:
 | is_efu     |                                                                     |
 | is_fpu_d   |                                                                     |
 | is_vfpu    |                                                                     |
-|------------|---------------------------------------------------------------------|
 
 
 ## Emulated instruction (Emul register)
