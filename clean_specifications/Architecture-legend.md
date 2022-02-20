@@ -75,3 +75,14 @@ Contains 3 Registers:
  - SD card
  - Disk
  - ISA
+
+# Sound Interface - SIF
+Directly connected to the RAM.
+
+> Helba:
+> No need for dedicated memory here, it is 44KHz x16 channels x 2 (stereo) x 2B
+> (PCM) => 3MB/s
+> DDR3 1600 is expected to have a throughput of 12Go/s
+> With a clock of 88KHz it is 10000ns per cycle (DDR latency is 14ns + 1 for
+> burst).
+
