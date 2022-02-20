@@ -35,7 +35,7 @@ class LatchSetTemplate:
 # FIXME make sure parents assess what their clocks are and raise error if incompatible
 # FIXME test for clock domain crossing
 class LatchSetRW:
-    # TODO connect taking an LatchSetRO as input so we can do busB.connect_to(busC)
+    # TODO connect taking an LatchSetRO as input so we can do busB.connect(busC)
     """
     Used to group signals together
     TODO example
@@ -200,11 +200,11 @@ class TestLatchSetRW(unittest.TestCase):
 ###############################################################################
 
 class LatchSetRO:
-    # TODO connect taking an LatchSetRW as input so we can do busB.connect_to(busC)
+    # TODO connect taking an LatchSetRW as input so we can do busB.connect(busC)
     def __init__(self, template=None):
         object.__setattr__(self, "no_add_signal", False) # We can add signal
-        object.__setattr__(self, "links", {})
-        object.__setattr__(self, "connectedTo", None)
+        object.__setattr__(self, "parents", {}) # Key: name of the signal, data: object whom attribute we have to fetch
+        object.__setattr__(self, "signals", {}) # Key: name of the signal, data: name of the attribute we need to fetch from the parent
 
         # Using a template
         if template != None:
@@ -223,57 +223,98 @@ class LatchSetRO:
         if object.__getattribute__(self, "no_add_signal"):
             raise EnvironmentError("You can no longer add signal once you started using it")
             return None
-        if signal_name in object.__getattribute__(self, "links"):
+        if signal_name in object.__getattribute__(self, "parents"):
             raise EnvironmentError("Signal's name already in use, use unique signal names")
             return None
-        object.__getattribute__(self, "links")[signal_name] = None # Open input
-    def connect_to(self, latchset):
+        # List of objects and the name of their child
+        # None for open inputs
+        object.__getattribute__(self, "parents")[signal_name] = None # Open input
+        object.__getattribute__(self, "signals")[signal_name] = ""
+    def connect(self, linkname_or_rwset, parent=None, pointer=None):
         """
-        Raises EnvironmentError if latchset is not of type LatchSetRW
-
-        Raises EnvironmentError if the output latchSet doesn't match our
-        expected outputs
-
-        Raises EnvironmentError if you try to use this function after any
-        attribute
+        TODO
         """
-        if object.__getattribute__(self, "no_add_signal"):
-            raise EnvironmentError("You can no longer add signal once you started using it")
-            return None
-        if not type(latchset) == LatchSetRO:
-            raise EnvironmentError("Why do you want to connect two inputs together? You should not do that")
-        if not type(latchset) == LatchSetRW:
-            raise EnvironmentError("The output you try to connect this input with is not of type LatchSetRW")
-        for lname in object.__getattribute__(latchset, "signals"):
-            if not lname in object.__getattribute__(self, "links"):
-                print("Error: Output contains too many signals, please use LatchSetTemplate to initilize latchsets")
-                raise EnvironmentError("Output (bus) do not match the input you try to connect it to")
-        for lname in object.__getattribute__(self, "links"):
-            if not lname in object.__getattribute__(latchset, "signals"):
-                print("Error: Output does not contain all the signal the input is expecting, please use LatchSetTemplate to initilize latchsets")
-                raise EnvironmentError("Output (bus) do not match the input you try to connect it to")
-        object.__setattr__(self, "connectedTo", latchset) # We connect to the output
+        # Test if linkname_or_rwset is a rwset
+        if parent == None:
+            if type(linkname_or_rwset) != LatchSetRW:
+                raise EnvironmentError("If you call connect with a single argument is has to be a LatchSetRW (aka output)")
+            # Connect as all signals from linkname_or_rwset to our this object
+            # This object should already contain the signal's entry and the
+            # names should match
+            # Raises error if all outputs cannot be connected
+            for toadd in object.__getattribute__(linkname_or_rwset, "signals"):
+                if not toadd in object.__getattribute__(self, "parents"):
+                    print("Error: Trying to connect inputs_bus to an outputs_bus")
+                    print("output signal: {} cannot be found in inputs".format(toadd))
+                    raise EnvironmentError("Inputs and Outputs sets do not match, use LatchSetTemplate to initialize them")
+                if object.__getattribute__(self, "parents") != None:
+                    raise EnvironmentError("Input has already been set, you should not set the same input twice, maybe you already connected it explicitely and you are now trying to map it to a bus")
+                if not toadd in object.__getattribute__(linkname_or_rwset, "signals"):
+                    raise EnvironmentError("Output's signal {} does not exists".format(toadd))
+                object.__getattribute__(self, "parents")[toadd] = linkname_or_rwset
+                object.__getattribute__(self, "signals")[toadd] = toadd
+
+
+        # linkname_or_rwset is a linkname
+        # Connect self.linkname_or_rwset to parent.pointer
+        if type(pointer) == None:
+            raise EnvironmentError("pointer needs to be set, it is the name of the signal from the outputs (aka parent) you want your input to be connected to")
+        if not linkname_or_rwset in object.__getattribute__(self, "parents"):
+            raise EnvironmentError("signal does not exists in the input, see LatchSetRO.add_signal")
+        # TODO check the signal exists in the output side (such error may be
+        # difficult to debug)
+        if object.__getattribute__(self, "parents")[linkname_or_rwset] != None:
+            raise EnvironmentError("This input is already wired, you cannot wire it twice")
+        object.__getattribute__(self, "parents")[linkname_or_rwset] = parent
+        object.__getattribute__(self, "signals")[linkname_or_rwset] = pointer
+
     def __getattribute__(self, signal_name):
+        """
+        Raises EnvironmentError if the signal does not exists
+        Raises EnvironmentError if the signal exists but is not connected to
+        any source (open input)
+        """
         # Allow some methods to be called
         if signal_name == "add_signal":
             return object.__getattribute__(self, signal_name)
         object.__setattr__(self, "no_add_child", True) # We can no longuer add signal
-        if signal_name == "connect_to":
+        if signal_name == "connect":
             return object.__getattribute__(self, signal_name)
-        if object.__getattribute__(self, "connectedTo") != None:
-            # Fetch the value from the connected output
-            return object.__getattribute__(self,
-                    "connectedTo").__getattribute__(signal_name)
+
+        if not signal_name in object.__getattribute__(self, "parents"):
+            raise EnvironmentError("This signal doesn't exist, see LatchSetRO::add_signal")
+        if object.__getattribute__(self, "parents")[signal_name] == None:
+            raise EnvironmentError("This is an open input, the signal is not connected, you should not read from it")
+        # Fetch value from the parents.signals
+        return object.__getattribute__(self, "parents")[signal_name].__getattribute__(object.__getattribute__(self, "signals")[signal_name])
+
+    def __setattr__(self, attrname, attrvalue):
+        """
+        Raises EnvironmentError because this set is readonly
+        """
+        raise EnvironmentError("This is read only")
+
+import unittest
+class TestLatchSetRO(unittest.TestCase):
+    def test_normal_usage(self):
+        somebus = LatchSetRO()
+        somebus.add_signal("ia")
+        self.ia_driver = 8
+        somebus.connect("ia", self, "ia_driver")
+        self.assertEqual(somebus.ia, 8, "Should read value from 'output'")
+        self.ia_driver = 42
+        self.assertEqual(somebus.ia, 42, "Should update value from 'output'")
 
 
-    # TODO setter that returns an error because inputs are readonly
-    # TODO, getter which fetch value from linked Output, returns an error if no linked output
+###############################################################################
 
 class LatchSetCollection:
     def add_bus():
         pass # TODO add a bus
     # TODO getter to access a bus directly with it's name
     # TODO setter returning an error (should use add_bus)
+
+###############################################################################
 
 class Synchronous:
     """
@@ -345,7 +386,6 @@ class Synchronous:
         """
         Internally used to update all signals recursively
         """
-        self.inputs._tick()
         self.outputs._tick()
         self.states._tick()
         for child_name in self.children:
@@ -374,8 +414,8 @@ class TestSynchronous(unittest.TestCase):
     def test_normal_usage(self):
         class Or(Synchronous):
             def init(self):
-                self.inputs.add_signal("ia", 0, "documentation test")
-                self.inputs.add_signal("ib", 0)
+                self.inputs.add_signal("ia")
+                self.inputs.add_signal("ib")
                 self.outputs.add_signal("o")
                 self.states.add_signal("register", 0)
 
@@ -384,8 +424,12 @@ class TestSynchronous(unittest.TestCase):
                 self.outputs.o = self.inputs.ia or self.inputs.ib
                 self.states.register = self.inputs.ia and self.inputs.ib
         dut = Or() # Device Under Test
+        self.test_a = 0
+        self.test_b = 0
+        dut.inputs.connect("ia", self, "test_a")
+        dut.inputs.connect("ib", self, "test_b")
         dut.simulate_one_cycle()
-        self.assertEqual(dut.outputs.o, 0, "Default inputs 0 or 0 = 0")
+        self.assertEqual(dut.outputs.o, 0, "default inputs 0 or 0 = 0")
         self.assertEqual(dut.states.register, 0, "Default inputs 0 and 0 = 0")
         dut.simulate_one_cycle()
         #dut.inputs.ia = 1
