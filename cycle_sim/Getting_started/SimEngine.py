@@ -5,8 +5,8 @@
 
 class LatchSetTemplate:
     """
-    Used to create LatchSetRW and/or LatchSetRO
-    They can be automatically wired together with the Synchronous::connect_bus() call
+    Used to create LatchSet and/or WireSet
+    They can be automatically wired together with the WireSet::connect(LatchSet) call
     """
     def __init__(self):
         self.signals = {}
@@ -17,7 +17,7 @@ class LatchSetTemplate:
             return None
         self.signals[signal_name] = default_values
         self.documentation[signal_name] = documentation
-    def _modify_LatchSetRW(self, latchset):
+    def _append_to_LatchSet(self, latchset):
         a = object.__getattribute__(latchset, "signals")
         b = object.__getattribute__(latchset, "new_signals")
         c = object.__getattribute__(latchset, "documentation")
@@ -25,17 +25,24 @@ class LatchSetTemplate:
             a[sig] = self.signals[sig]
             b[sig] = self.signals[sig]
             c[sig] = self.documentation[sig]
-    def _modify_LatchSetRO(self, latchset):
-        a = object.__getattribute__(latchset, "links")
+    def _append_to_WireSet(self, latchset):
+        a = object.__getattribute__(latchset, "parents")
+        b = object.__getattribute__(latchset, "signals")
         for sig in self.signals:
             a[sig]=None # Default returned value on an open input = None
+            b[sig]=""
 
-# TODO test
+import unittest
+class TestLatchSetTemplate(unittest.TestCase):
+    def test_normal_usage(self):
+        # TODO
+        pass
+###############################################################################
 
 # FIXME make sure parents assess what their clocks are and raise error if incompatible
 # FIXME test for clock domain crossing
-class LatchSetRW:
-    # TODO connect taking an LatchSetRO as input so we can do busB.connect(busC)
+class LatchSet:
+    # TODO connect taking an WireSet as input so we can do busB.connect(busC)
     """
     Used to group signals together
     TODO example
@@ -50,7 +57,7 @@ class LatchSetRW:
 
         # Add signals according to template (optional)
         if template != None:
-            template._modify_LatchSetRW(self)
+            template._append_to_LatchSet(self)
 
 
     def add_signal(self, signal_name, initial_value=None, documentation=""):
@@ -62,7 +69,7 @@ class LatchSetRW:
 
 
         Add a signal to the internal list of signals.
-        It should be called right after the instanciation of an LatchSetRW object and never after
+        It should be called right after the instanciation of an LatchSet object and never after
         Raises EnvironmentError if you try to call this function after any
         other function as been called
 
@@ -71,10 +78,10 @@ class LatchSetRW:
         TODO check we do not add a child called add_signal or _tick
         """
         if object.__getattribute__(self, "no_add_signal"):
-            raise EnvironmentError("You can no longer add signals to an LatchSetRW once simulation started")
+            raise EnvironmentError("You can no longer add signals to an LatchSet once simulation started")
             return None
         if signal_name in object.__getattribute__(self, "signals"):
-            raise EnvironmentError("Signal as already been added to this LatchSetRW, you should not try to add a signal twice")
+            raise EnvironmentError("Signal as already been added to this LatchSet, you should not try to add a signal twice")
             return None
         object.__getattribute__(self, "signals")[signal_name] = initial_value
         object.__getattribute__(self, "new_signals")[signal_name] = initial_value
@@ -96,7 +103,7 @@ class LatchSetRW:
 
         #print("getattr {}".format(signal_name)) # TODO remove debugging
         if not signal_name in object.__getattribute__(self, "signals"):
-            raise AttributeError("Signal's name is wrong or signal is not declared, see LatchSetRW.add_signal()")
+            raise AttributeError("Signal's name is wrong or signal is not declared, see LatchSet.add_signal()")
         return object.__getattribute__(self, "signals")[signal_name]
 
     def __setattr__(self, signal_name, signal_value):
@@ -114,7 +121,7 @@ class LatchSetRW:
         #print("setattr {} <= {}".format(signal_name, signal_value)) # TODO remove debugging
         object.__setattr__(self, "no_add_signal", True) # We can no longer add signals
         if not signal_name in object.__getattribute__(self, "new_signals"):
-            raise AttributeError("Signal's name is wrong or signal is not declared, see LatchSetRW.add_signal()")
+            raise AttributeError("Signal's name is wrong or signal is not declared, see LatchSet.add_signal()")
         if signal_name in object.__getattribute__(self, "signal_set_this_cycle"):
             raise EnvironmentError("Signal as already be set this cycle")
         object.__getattribute__(self, "new_signals")[signal_name] = signal_value
@@ -132,14 +139,14 @@ class LatchSetRW:
 
 
 import unittest
-class TestLatchSetRW(unittest.TestCase):
+class TestLatchSet(unittest.TestCase):
     """
-    Unit testing of LatchSetRW objects
+    Unit testing of LatchSet objects
 
     TODO test adding a child called no_add_signal, signals, new_signals, documentation, signal_set_this_cycle
     """
     def test_normal_usage(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         tmp.add_signal("siga")
         tmp.add_signal("sigb", 2348)
         tmp.add_signal("sigc", 8734, "Some documentation")
@@ -159,7 +166,7 @@ class TestLatchSetRW(unittest.TestCase):
 
     # Check add_signal error handling
     def test_adding_signal_twice(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         tmp.add_signal("siga")
         with self.assertRaises(EnvironmentError):
             tmp.add_signal("siga")
@@ -167,7 +174,7 @@ class TestLatchSetRW(unittest.TestCase):
         with self.assertRaises(EnvironmentError):
             tmp.add_signal("siga")
     def test_adding_signal_after_use(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         tmp.add_signal("siga")
         tmp.siga = 42
         with self.assertRaises(EnvironmentError):
@@ -178,18 +185,18 @@ class TestLatchSetRW(unittest.TestCase):
 
     # Check getter error handling
     def test_getting_non_existant_signal(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         with self.assertRaises(AttributeError):
             foo = tmp.siga
 
 
     # Check setter error handling
     def test_setting_non_existant_signal(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         with self.assertRaises(AttributeError):
             tmp.siga = 42
     def test_setting_signal_twice(self):
-        tmp = LatchSetRW()
+        tmp = LatchSet()
         tmp.add_signal("siga")
         tmp.siga = 42
         with self.assertRaises(EnvironmentError):
@@ -199,8 +206,8 @@ class TestLatchSetRW(unittest.TestCase):
 
 ###############################################################################
 
-class LatchSetRO:
-    # TODO connect taking an LatchSetRW as input so we can do busB.connect(busC)
+class WireSet:
+    # TODO connect taking an LatchSet as input so we can do busB.connect(busC)
     def __init__(self, template=None):
         object.__setattr__(self, "no_add_signal", False) # We can add signal
         object.__setattr__(self, "parents", {}) # Key: name of the signal, data: object whom attribute we have to fetch
@@ -208,7 +215,7 @@ class LatchSetRO:
 
         # Using a template
         if template != None:
-            template._modify_LatchSetRO(self)
+            template._append_to_WireSet(self)
     def add_signal(self, signal_name):
         """
         Raises EnvironmentError if the Object as already be used and no more
@@ -236,8 +243,8 @@ class LatchSetRO:
         """
         # Test if linkname_or_rwset is a rwset
         if parent == None:
-            if type(linkname_or_rwset) != LatchSetRW:
-                raise EnvironmentError("If you call connect with a single argument is has to be a LatchSetRW (aka output)")
+            if type(linkname_or_rwset) != LatchSet:
+                raise EnvironmentError("If you call connect with a single argument is has to be a LatchSet (aka output)")
             # Connect as all signals from linkname_or_rwset to our this object
             # This object should already contain the signal's entry and the
             # names should match
@@ -260,7 +267,7 @@ class LatchSetRO:
         if type(pointer) == None:
             raise EnvironmentError("pointer needs to be set, it is the name of the signal from the outputs (aka parent) you want your input to be connected to")
         if not linkname_or_rwset in object.__getattribute__(self, "parents"):
-            raise EnvironmentError("signal does not exists in the input, see LatchSetRO.add_signal")
+            raise EnvironmentError("signal does not exists in the input, see WireSet.add_signal")
         # TODO check the signal exists in the output side (such error may be
         # difficult to debug)
         if object.__getattribute__(self, "parents")[linkname_or_rwset] != None:
@@ -282,7 +289,7 @@ class LatchSetRO:
             return object.__getattribute__(self, signal_name)
 
         if not signal_name in object.__getattribute__(self, "parents"):
-            raise EnvironmentError("This signal doesn't exist, see LatchSetRO::add_signal")
+            raise EnvironmentError("This signal doesn't exist, see WireSet::add_signal")
         if object.__getattribute__(self, "parents")[signal_name] == None:
             raise EnvironmentError("This is an open input, the signal is not connected, you should not read from it")
         # Fetch value from the parents.signals
@@ -297,7 +304,7 @@ class LatchSetRO:
 import unittest
 class TestLatchSetRO(unittest.TestCase):
     def test_normal_usage(self):
-        somebus = LatchSetRO()
+        somebus = WireSet()
         somebus.add_signal("ia")
         self.ia_driver = 8
         somebus.connect("ia", self, "ia_driver")
@@ -331,9 +338,9 @@ class Synchronous:
         self.outputs_bus = LatchSetCollection()
 
         # Attributes which are not Buses
-        self.inputs = LatchSetRO()
-        self.outputs = LatchSetRW()
-        self.states = LatchSetRW()
+        self.inputs = WireSet()
+        self.outputs = LatchSet()
+        self.states = LatchSet()
 
         self.children = {}
         self.children_doc = {}
