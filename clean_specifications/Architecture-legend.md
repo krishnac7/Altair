@@ -76,6 +76,10 @@ Contains 3 Registers:
  - Disk
  - ISA
 
+# Memory access pattern
+<https://en.wikipedia.org/wiki/Memory_access_pattern>
+keywords: Random Access, RAM, Gather, Scatter, Strided
+
 # Sound Interface - SIF
 Directly connected to the RAM.
 
