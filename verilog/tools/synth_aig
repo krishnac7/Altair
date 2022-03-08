@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+HDL_FULLPATH=`realpath $1`
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd $SCRIPT_DIR
+VLOG_FILE_NAME=$HDL_FULLPATH yosys yosys_aig.tcl
