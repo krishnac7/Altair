@@ -1,6 +1,9 @@
 This file is the documentation for the verilog module src/verilog/cache_4w_ro.*
 -------------------------------------------------------------------------------
 
+Description: 4 way set-associative read-only cache
+File: src/cache_4w_ro.m.v
+
 Parameters:
 - SET_ASSOCIATIVITY: Number of way for the cache, 4
 - INSTR_SIZE: Size of one instruciton in bit, 1 instruction = 4B = 32 bits
@@ -124,7 +127,7 @@ little extra logic (and a dual port RAM instead of a single port one)
 ICACHE_FILL_LATENCY is the latency it takes to fetch a new line from the MMU it
 varies depending on the avaibility of the underlaying memories...
 
-TODO Add information about the replacement policy (LRU)
+TODO Add information about the Least-recently used (LRU) replacement policy
 
 TODO Add information about the tag structure
     1 bit                      20 bits                                ?
