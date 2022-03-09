@@ -89,7 +89,7 @@ assign <SOME WIRE> = <...>; // use "assign" statements (with blocking '=') for c
 // do not use regs otherwise
 FF a_register_name (.clk(i_clk), .d(a_register_name_d), .q(a_register_name_q));
 
-// only use combinational "always" block if you really know what you are doing and you cannot do it
+// only use combinational "always" block (with blocking '=') if you really know what you are doing and you cannot do it
 // cleanly using "generate" blocks
 
 // Stay compliant with IEEE verilog-2005
