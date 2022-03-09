@@ -1,6 +1,6 @@
 # Blocks in the Graph:
 
-The full block diagram in inside <./doc/Architecture.odg> (LibreOffice Draw document)
+The full block diagram in inside [./doc/Architecture.odg](doc/Architecture.odg) (LibreOffice Draw document)
 
 ## Identify Execution Unit (IDEXU)
 Detects if the instruction should be considered as a branch, an arithmetic

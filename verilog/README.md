@@ -1,12 +1,12 @@
 # Verilog hardware model
 
-The hardware description is in <src/>
+The hardware description is in [src/](src/)
 
 
-The documentation for each module is in <doc/README.md>
+The documentation for each module is in [doc/README.md](doc/README.md)
 
 
-The verification for each module is in <verif/>
+The verification for each module is in [verif/](verif/)
 
 
 ## Interactive block diagram
@@ -16,7 +16,7 @@ flowchart TB
     subgraph L1 [L1 cache]
     Memory["4 way set-associative read-only cache"]-->MUX
     Emulated_instruction-->MUX
-    click Memory "./doc/cache_4w_ro.txt"
+    click Memory "./pisgah-fogel/Altair/blob/verilog/verilog/doc/cache_4w_ro.txt"
     end
     MUX-->IDEXU_1
     MUX-->IDEXU_2
@@ -60,7 +60,7 @@ Write-through VS write back cache. Directory protocol?
  - Improve the Cocotb verification for: Single port block RAM
  - Benchmark: lmbench
  - Benchmark: Spec2017
- - Benchmark: https://github.com/embench/embench-iot
+ - Benchmark: <https://github.com/embench/embench-iot>
  - Add compression in cache
  - If return address prediction can improve C perfomance what about modern
    Oriented Object programing?
