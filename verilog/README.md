@@ -16,7 +16,7 @@ flowchart TB
     subgraph L1 [L1 cache]
     Memory["4 way set-associative read-only cache"]-->MUX
     Emulated_instruction-->MUX
-    click Memory "./pisgah-fogel/Altair/blob/verilog/verilog/doc/cache_4w_ro.txt"
+    click Memory "./pisgah-fogel/Altair/blob/verilog/verilog/doc/cache_4w_ro.md"
     end
     MUX-->IDEXU_1
     MUX-->IDEXU_2
