@@ -132,23 +132,27 @@ combinational blocks.
 ```
 always @ (posedge clk)
 begin
-    if (rst_n == 1'b0) <SIGNAL'S NAME>_q <= 0;
-    else <SIGNAL'S NAME>_q <= d;
+    if (rst_n == 1'b0) <SIGNAL'S NAME>_q <= <SIZE>'h0;
+    else <SIGNAL'S NAME>_q <= <SIGNAL'S NAME>_d;
 end
 ```
 
 ```
 always @ (posedge clk or negedge async_rst_n)
 begin
-    if (async_rst_n == 1'b0) <SIGNAL'S NAME>_q <= 0;
-    else <SIGNAL'S NAME>_q <= d;
+    if (async_rst_n == 1'b0) <SIGNAL'S NAME>_q <= <SIZE>'h0;
+    else <SIGNAL'S NAME>_q <= <SIGNAL'S NAME>_d;
 end
 ```
 
 ```
 always @ (posedge clk or negedge async_rst_n)
 begin
-    if (async_rst_n == 1'b0) q <= 0;
-    else if (en) q <= d;
+    if (async_rst_n == 1'b0) <SIGNAL'S NAME>_q <= <SIZE>'h0;
+    else if (en) <SIGNAL'S NAME>_q <= <SIGNAL'S NAME>_d;
 end
 ```
+
+TODO: Should we only intentiate some common module?
+
+TODO: Should we include scan chain support?
