@@ -68,31 +68,87 @@ Write-through VS write back cache. Directory protocol?
 
 ## Verilog coding guideline
 
+This guidelines make use of `reg` / `wire` instead of `logic` only because of
+the lack of compatibility with opensource EDA (yosys, iverilog, verilator...).
 ```
+// Stay compliant with IEEE verilog-2005
+
 // Only use comments with "//" do not use "/* ... */"
     // Only indent with spaces, no tabulation because of some weird
     // with propriatory tools
 
-module <MODULE'S NAME> (
-input wire <INPUT'S NAME>; // always specify "wire"
-output wire <INPUT'S NAME>;
+module <MODULE'S NAME> #(
+parameter <PARAMETER'S NAME> = ... // only use [A-Z_0-9] for constant's names
+) (
+input wire <INPUT'S NAME>, // always specify "wire"/"reg"
+output wire <INPUT'S NAME>
 );
 
-parameter <PARAMETER'S NAME> = ...; // only use [A-Z_0-9] for constant's names
+wire [<SIZE>-1:0] <WIRE'S NAME>; // use little endian for packed arrays
+wire <WIRE'S NAME> [0:<SIZE>-1]; // use big endian for unpacked arrays
 
-wire [<SIZE>-1:0] <WIRE'S NAME>; // always use wires
+// use "assign" statements (with blocking '=') for combinational logic
+assign <SOME WIRE> = <...>;
 
-assign <SOME WIRE> = <...>; // use "assign" statements (with blocking '=') for combinational logic
+// with systemVerilog we would use always_comb
+// if using assign is unpractical use combinational blocks
+always@*
+begin
+    // Only use blocking statements
+    a = b; // Such a simple assigment should use "assign"
+end
 
-// Instead of using sequential "always" block prefer instanciating a standard Flip-Flop
-// Note a_register_name_q has to be a "reg" because it is the output of an instance
-// do not use regs otherwise
-FF a_register_name (.clk(i_clk), .d(a_register_name_d), .q(a_register_name_q));
+always@*
+begin
+    // make sure you know what are latches and what you shouldn't do
+    if (c[1:0] == 2'b00) d = ...;
+    else d = ...; // always set default values
+end
 
-// only use combinational "always" block (with blocking '=') if you really know what you are doing and you cannot do it
-// cleanly using "generate" blocks
+always@*
+begin
+    // with systemVerilog we would use unique case inside
+    // do not use casex but you can use casez if you understand priority
+    case (select)
+        2b'00: e = 1'b0;
+        2b'01: e = ...;
+        default: e = ...; // set defaults even if not required
+    endcase
+end
 
-// Stay compliant with IEEE verilog-2005
+// always name your "generate" statements
+
+assign big_bit_vector[7:0] = {4'b0000, smaller_vector[3:0]}; // be explicit
+
+assign counter[3:0] = 4'(counter_q + 4'b1); // explicitely discard the carry
+
 // Write a testcase using cocotb in verification/<MODULE'S NAME> for every module
 // At least check you can synthetise using yosys (default "synth" or AIG)
+```
+
+Only standard sequential blocks are allowed, only write your logic in
+combinational blocks.
+
+```
+always @ (posedge clk)
+begin
+    if (rst_n == 1'b0) <SIGNAL'S NAME>_q <= 0;
+    else <SIGNAL'S NAME>_q <= d;
+end
+```
+
+```
+always @ (posedge clk or negedge async_rst_n)
+begin
+    if (async_rst_n == 1'b0) <SIGNAL'S NAME>_q <= 0;
+    else <SIGNAL'S NAME>_q <= d;
+end
+```
+
+```
+always @ (posedge clk or negedge async_rst_n)
+begin
+    if (async_rst_n == 1'b0) q <= 0;
+    else if (en) q <= d;
+end
 ```
