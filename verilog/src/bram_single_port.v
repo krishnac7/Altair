@@ -23,7 +23,7 @@ input wire [ADDRSIZE-1:0] addr;
 input wire [DATASIZE-1:0] din;
 output reg [DATASIZE-1:0] dout;
 
-reg [DATASIZE-1:0] mem [(2**ADDRSIZE)-1:0];
+reg [DATASIZE-1:0] mem [0:(2**ADDRSIZE)-1];
 
 always @ (posedge clk)
 begin
