@@ -1,9 +1,6 @@
 # 4-way set-associative read-only cache
 
-This file is the documentation for the verilog module `src/verilog/cache_4w_ro.*`
-
-
-File: [src/cache_4w_ro.m.v](src/cache_4w_ro.m.v)
+Verilog file: [../src/cache_4w_ro.m.v](../src/cache_4w_ro.m.v)
 
 
 Parameters:
