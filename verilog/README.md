@@ -54,6 +54,7 @@ Write-through VS write back cache. Directory protocol?
  - [ ] Multicore cache coherence testing
  - [ ] IO bus
  - [ ] GPU/accelerator bus
+ - [ ] Try sv2v (SystemVerilog to Verilog): <https://github.com/zachjs/sv2v>
 
 ## TODO: Low priority
  - Improve the Cocotb verification for: Dual port block RAM
