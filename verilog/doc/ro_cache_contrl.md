@@ -1,6 +1,6 @@
 # 4-way set-associative read-only cache
 
-Verilog file: [../src/cache_4w_ro.m.v](../src/cache_4w_ro.m.v)
+Verilog file: [../src/ro_cache_contrl.sv](../src/ro_cache_contrl.sv)
 
 
 Parameters:
