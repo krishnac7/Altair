@@ -20,7 +20,8 @@ Parameters:
 - `BITS_TO_ADDR_A_LINE`: How many bits do we need to addres a single cache line?
   `log2(CACHE_SIZE / ADDRESSING_MODE) = 8 bits`
 
-- `TAG_LENGTH`: Number of bits in a tag, `ADDR_LENGTH - BITS_TO_ADDR_CACHE_SIZE = 20`
+- `ADDR_TAG_LENGTH`: Number of bits in a tag to detect a cache hit/miss,
+   `ADDR_LENGTH - BITS_TO_ADDR_CACHE_SIZE = 20`
 - `MMU_WRITE_LENGTH`: how many bits does the Memory Management Unit (MMU) can
   write in a single clock single to the cache, 32 bits here
 
