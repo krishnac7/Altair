@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # FIXME convert systemverilog to verilog before synthesis
 HDL_FULLPATH=`realpath $1`
+if [[ $1 == *.sv ]]
+then
+    echo "Translating SystemVerilog to verilog"
+    sv2v --define=SYNTHESIS $HDL_FULLPATH > ${HDL_FULLPATH}.v
+    HDL_FULLPATH="${HDL_FULLPATH}.v"
+fi
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR
 TOPLEVEL="$2" VLOG_FILE_NAME=$HDL_FULLPATH yosys yosys_aig.tcl
+if [[ $1 == *.sv ]]
+then
+    echo "Deleting generated ${HDL_FULLPATH}"
+    rm ${HDL_FULLPATH}
+fi
