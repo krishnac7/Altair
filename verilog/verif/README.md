@@ -40,3 +40,9 @@ You can then run simulations:
 ## Hardware requirement
 
 There is no special hardware requirement, it should run on any machine which can run python.
+
+## Formal verification
+Notion on formal verification: <https://zipcpu.com/blog/2017/10/19/formal-intro.html>
+
+
+Presentation of the toolchain: <https://yosyshq.readthedocs.io/projects/sby/en/latest/install.html#prerequisites>
