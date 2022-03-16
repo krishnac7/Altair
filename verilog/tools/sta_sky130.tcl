@@ -7,7 +7,7 @@ proc pause {{message "Hit Enter to continue ==> "}} {
     gets stdin
 }
 
-sta read_liberty $::env(SKY130B)/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+sta read_liberty $::env(SKY130A)/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 sta read_verilog $::env(SYNTH_OUTPUT)
 sta link_design $::env(TOPLEVEL)
 sta set_units -time ns

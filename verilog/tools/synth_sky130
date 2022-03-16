@@ -8,12 +8,12 @@ then
 fi
 
 # Check the environment variable
-if [ -d $SKY130 ]
+if [ -d $SKY130A ]
 then
-    echo "Using Skywater130nm library from \$SKY130 : $SKY130"
+    echo "Using Skywater130nm library from \$SKY130A : $SKY130A"
 else
-    echo "Error: Please add SKY130 to you environment variable \$SKY130"
-    echo "Example: export SKY130=\"~/OpenLane/pdks/sky130B\""
+    echo "Error: Please add SKY130A to you environment variable \$SKY130A"
+    echo "Example: export SKY130A=\"~/OpenLane/pdks/sky130A\""
     echo "You can find OpenLane on github and run 'make pdks' to download the pdks"
     exit 1
 fi
