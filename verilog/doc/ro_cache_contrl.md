@@ -136,3 +136,7 @@ TODO Add information about the tag structure
     1 bit                      20 bits                                ?
 VALID/INVALID   ADDRESS[ADDR_LENGTH-1:BITS_TO_ADDR_CACHE_SIZE]   LRU_COUNTER
 ```
+
+# Ideas and reference
+
+- We could implement Hamming code (cf Ibex's implementation <https://github.com/lowRISC/ibex/blob/master/rtl/ibex_icache.sv>)
