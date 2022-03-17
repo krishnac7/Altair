@@ -2,6 +2,17 @@
 
 Verilog file: [../src/ro_cache_contrl.sv](../src/ro_cache_contrl.sv)
 
+## Overview
+
+The cache controller fetches data from the MMU unit and automatically
+increments the `addr`. 
+
+The instruction fetch stage of the CPU reset the counter and set the `addr`
+when a branch is taken.
+
+TODO: Should the banks be dual port, Read-Write+Read. Instruction fetch uses the read port and prefetch (and access from other cores...) can be made in parallel.
+
+## Parameters
 
 Parameters:
 - `SET_ASSOCIATIVITY`: Number of way for the cache, 4
@@ -17,7 +28,7 @@ Parameters:
   `CACHE_SIZE` with a 'granularity' of `ADDRESSING_MODE`?
   `log2(CACHE_SIZE / (SET_ASSOCIATIVITY*ADDRESSING_MODE)) = 12 bits`
 
-- `BITS_TO_ADDR_A_LINE`: How many bits do we need to addres a single cache line?
+- `BITS_TO_ADDR_A_LINE`: How many bits do we need to address a single cache line?
   `log2(CACHE_SIZE / ADDRESSING_MODE) = 8 bits`
 
 - `ADDR_TAG_LENGTH`: Number of bits in a tag to detect a cache hit/miss,
@@ -50,7 +61,7 @@ The cache make use of 3 memories (aka 3 banks):
 - Main memory for instruction 1
 
 ```
-i_addr[BITS_TO_ADDR_CACHE_SIZE-1 : BITS_TO_ADDR_A_LINE] (cf [1])
+addr[BITS_TO_ADDR_CACHE_SIZE-1 : BITS_TO_ADDR_A_LINE] (cf [1])
   |
   |        ** Tag memory **
   v     Way0     Way1     Way2     Way3
@@ -58,11 +69,11 @@ i_addr[BITS_TO_ADDR_CACHE_SIZE-1 : BITS_TO_ADDR_A_LINE] (cf [1])
  ...    ...      ...      ...      ...
  0x3     TAG      TAG      TAG      TAG
           |        |        |        |
-          |        |        |        |      i_addr[?:?]
+          |        |        |        |      addr[?:?]
           |        |        |        |         v
           \--------------------------------> COMPARE ---> {HIT/MISS, way#}
 
-addr_bank0 = (i_addr[0] == 0)? i_addr[?:?]: i_addr[?:?]+1 (cf [1])
+addr_bank0 = (addr[0] == 0)? addr[?:?]: addr[?:?]+1 (cf [1])
    |       ** Main memory - bank 0 **
    v    Way0     Way1     Way2     Way3
   0x0  4B instr 4B instr 4B instr 4B instr
@@ -76,7 +87,7 @@ addr_bank0 = (i_addr[0] == 0)? i_addr[?:?]: i_addr[?:?]+1 (cf [1])
                        v
                    int_intr_b0
 
-addr_bank1 = (i_addr[0] == 1)? i_addr[?:?]: i_addr[?:?]+1 (cf [1])
+addr_bank1 = (addr[0] == 1)? addr[?:?]: addr[?:?]+1 (cf [1])
    |
    |       ** Main memory - bank 1 **
    v    Way0     Way1     Way2     Way3
@@ -101,19 +112,20 @@ Having the Tags in a separate memory results in two different modes:
 - Power saving: We fetch the Main datas only if we have a cache hit. (it would
   take 2 cycles in the current implementation)
 
-[1] The Branch Unit will ask to fetch `i_addr`, both the instruction at `i_addr`
-and `i_addr+1` will be fetched. The fetch which address is even will be on bank
-0 and it's result will be `instr_0` (instruction 0) the fetch which address is
-odd will be on bank 1 and results in `instr_1`.
-First if `i_addr` is a cache hit it's pairing bit [2] is checked.
-If `i_addr` and `i_addr+1` are on the same cache lines (write lines/write
+[1] `addr` is the address of the next instruction that needs to be fetched, 
+both the instruction at `addr` and `addr+1` will be fetched. The fetch which
+address is even will be on bank 0 and it's result will be
+`instr_0` (instruction 0) the fetch which address is odd will be on bank 1
+and results in `instr_1`.
+First if `addr` is a cache hit it's pairing bit [2] is checked.
+If `addr` and `addr+1` are on the same cache lines (write lines/write
 blocks) then `instr_1` can be fetched together with `instr_0` without extra cost
 else `cache_line_crossing` is set and an extra cycle will be required to check
 the tag of the other line is `instr_0`'s pairing bit requires `intr_1` to be
 fetched together with `intr_1`.
 
 [2] "pairing bit" a bit in the instruction which indication if the next
-inxtruction (`i_addr+1`) should be fetched together with this one.
+inxtruction (`addr+1`) should be fetched together with this one.
 
 [3] On a cache miss:
 - the processor will be stalled, it will take
