@@ -1,8 +1,18 @@
-sudo apt install iverilog
-verilator
+
+# verilog simulators
+sudo apt install iverilog verilator
+
+# Static timing analysis
+sudo apt install opensta
+
+# Synthesis
+sudo apt install yosys
+
+# Convert systemVerilog to Verilog
+# required to compile sv2v
+sudo apt install haskell-platform
 git clone https://github.com/zachjs/sv2v.git
 cd sv2v/
-sudo apt install haskell-platform
 sudo cp bin/sv2v /usr/bin/
-sudo apt install opensta
-sudo apt install yosys
+
+
