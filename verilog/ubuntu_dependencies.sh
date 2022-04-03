@@ -1,4 +1,6 @@
 
+apt install python3
+
 # verilog simulators
 sudo apt install iverilog verilator
 
@@ -15,4 +17,5 @@ git clone https://github.com/zachjs/sv2v.git
 cd sv2v/
 sudo cp bin/sv2v /usr/bin/
 
-
+# Writing testcases in python
+python3 -m pip install cocotb
